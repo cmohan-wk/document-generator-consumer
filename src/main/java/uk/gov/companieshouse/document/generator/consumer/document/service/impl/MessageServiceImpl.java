@@ -1,8 +1,17 @@
 package uk.gov.companieshouse.document.generator.consumer.document.service.impl;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import uk.gov.companieshouse.document.generator.consumer.DocumentGeneratorConsumerApplication;
-import uk.gov.companieshouse.document.generator.consumer.avro.DocumentGenerationStateAvroSerializer;
+import uk.gov.companieshouse.document.generator.consumer.avro.AvroDatumFactory;
+import uk.gov.companieshouse.document.generator.consumer.avro.AvroSerializer;
 import uk.gov.companieshouse.document.generator.consumer.document.models.GenerateDocumentResponse;
 import uk.gov.companieshouse.document.generator.consumer.document.models.avro.DeserialisedKafkaMessage;
 import uk.gov.companieshouse.document.generator.consumer.document.models.avro.DocumentGenerationCompleted;
@@ -13,12 +22,6 @@ import uk.gov.companieshouse.document.generator.consumer.exception.MessageCreati
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class MessageServiceImpl implements MessageService {
@@ -37,7 +40,8 @@ public class MessageServiceImpl implements MessageService {
 
     private DateFormat isoDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-    private DocumentGenerationStateAvroSerializer documentGenerationStateAvroSerializer = new DocumentGenerationStateAvroSerializer();
+    @Autowired
+    private AvroSerializer serializer;
 
     @Override
     public Message createDocumentGenerationStarted(DeserialisedKafkaMessage deserialisedKafkaMessage) throws MessageCreationException {
@@ -50,7 +54,7 @@ public class MessageServiceImpl implements MessageService {
         try {
             LOG.infoContext(started.getRequesterId(),"Serialize document generation started and create message",
                     setStartedDebugMap(started));
-            byte[] startedData = documentGenerationStateAvroSerializer.serialize(started);
+            byte[] startedData = serializer.serialize(AvroDatumFactory.getWriter(), started);
             return createMessage(startedData, STARTED_PRODUCER_TOPIC);
         } catch (Exception e) {
             LOG.errorContext(started.getRequesterId(), "Error occurred whilst serialising document generation started",
@@ -76,7 +80,7 @@ public class MessageServiceImpl implements MessageService {
         try {
             LOG.infoContext(failed.getRequesterId(),"Serialize document generation failed and create message",
                    setFailedDebugMap(failed));
-            byte[] failedData = documentGenerationStateAvroSerializer.serialize(failed);
+            byte[] failedData = serializer.serialize(AvroDatumFactory.getWriter(), failed);
             return createMessage(failedData, FAILED_PRODUCER_TOPIC);
         } catch (Exception e) {
             LOG.errorContext(failed.getRequesterId(),"Error occurred whilst serialising document generation failed",
@@ -103,7 +107,7 @@ public class MessageServiceImpl implements MessageService {
         try {
             LOG.infoContext(completed.getRequesterId(),"Serialize document generation completed and create message",
                     setCompletedDebugMap(completed));
-            byte[] completedData = documentGenerationStateAvroSerializer.serialize(completed);
+            byte[] completedData = serializer.serialize(AvroDatumFactory.getWriter(), completed);
             return createMessage(completedData, COMPLETED_PRODUCER_TOPIC);
         } catch (Exception e) {
             LOG.errorContext(completed.getRequesterId(), "Error occurred whilst serialising document generation completed",
