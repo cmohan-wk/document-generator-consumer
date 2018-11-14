@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.document.generator.consumer.DocumentGeneratorConsumerApplication;
+import uk.gov.companieshouse.document.generator.consumer.avro.AvroDatumFactory;
 import uk.gov.companieshouse.document.generator.consumer.avro.AvroDeserializer;
 import uk.gov.companieshouse.document.generator.consumer.document.models.GenerateDocumentResponse;
 import uk.gov.companieshouse.document.generator.consumer.document.models.avro.DeserialisedKafkaMessage;
@@ -69,7 +70,7 @@ public class MessageProcessorImpl implements MessageProcessor {
         for (Message message : kafkaMessages) {
 
             try {
-                deserialisedKafkaMessage = avroDeserializer.deserialize(message, DeserialisedKafkaMessage.getClassSchema());
+                deserialisedKafkaMessage = avroDeserializer.deserialize(AvroDatumFactory.getReader(), message, DeserialisedKafkaMessage.getClassSchema());
 
                 LOG.infoContext(deserialisedKafkaMessage.getUserId(), "Message received and deserialised from kafka",
                         setDebugMap(deserialisedKafkaMessage));

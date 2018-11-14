@@ -1,15 +1,20 @@
 package uk.gov.companieshouse.document.generator.consumer.avro;
 
 
+import java.io.IOException;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import uk.gov.companieshouse.document.generator.consumer.document.models.avro.DocumentGenerationCompleted;
 import uk.gov.companieshouse.document.generator.consumer.document.models.avro.DocumentGenerationFailed;
 import uk.gov.companieshouse.document.generator.consumer.document.models.avro.DocumentGenerationStarted;
 
-import java.io.IOException;
-
 @Component
 public class DocumentGenerationStateAvroSerializer {
+	
+	@Autowired
+	private AvroSerializer serializer;
 
     /**
      * Serialize the message for the completion of the document generation.
@@ -19,8 +24,7 @@ public class DocumentGenerationStateAvroSerializer {
      * @throws IOException
      */
     public byte[] serialize(DocumentGenerationCompleted document) throws IOException {
-        AvroSerializer<DocumentGenerationCompleted> serializer = new AvroSerializer<>();
-        return serializer.serialize(document);
+        return serializer.serialize(AvroDatumFactory.getWriter(), document);
     }
 
     /**
@@ -31,8 +35,7 @@ public class DocumentGenerationStateAvroSerializer {
      * @throws IOException
      */
     public byte[] serialize(DocumentGenerationStarted started) throws IOException {
-        AvroSerializer<DocumentGenerationStarted> serializer = new AvroSerializer<>();
-        return serializer.serialize(started);
+        return serializer.serialize(AvroDatumFactory.getWriter(), started);
     }
 
     /**
@@ -43,7 +46,6 @@ public class DocumentGenerationStateAvroSerializer {
      * @throws IOException
      */
     public byte[] serialize(DocumentGenerationFailed failed) throws IOException {
-        AvroSerializer<DocumentGenerationFailed> serializer = new AvroSerializer<>();
-        return serializer.serialize(failed);
+        return serializer.serialize(AvroDatumFactory.getWriter(), failed);
     }
 }

@@ -1,7 +1,7 @@
 package uk.gov.companieshouse.document.generator.consumer.processor;
 
-
 import org.apache.avro.Schema;
+import org.apache.avro.io.DatumReader;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -68,7 +68,7 @@ public class MessageProcessorTest {
     public void testsMessageProcessedCreatesStartedAndCompletedMessage() throws Exception {
 
         when(mockKafkaConsumerService.consume()).thenReturn(createTestMessageList());
-        when(mockAvroDeserializer.deserialize(any(Message.class), any(Schema.class)))
+        when(mockAvroDeserializer.deserialize(any(), any(Message.class), any(Schema.class)))
                 .thenReturn(createDeserialisedKafkaMessage());
         when(mockGenerateDocument.requestGenerateDocument(any(DeserialisedKafkaMessage.class)))
                 .thenReturn(createResponse());
@@ -87,7 +87,7 @@ public class MessageProcessorTest {
     public void testsMessageProcessedCreatesFailedMessageOnError() throws Exception {
 
         when(mockKafkaConsumerService.consume()).thenReturn(createTestMessageList());
-        when(mockAvroDeserializer.deserialize(any(Message.class), any(Schema.class)))
+        when(mockAvroDeserializer.deserialize(any(), any(Message.class), any(Schema.class)))
                 .thenThrow(new IOException());
 
         messageProcessor.processKafkaMessage();
@@ -125,7 +125,7 @@ public class MessageProcessorTest {
         return deserialisedKafkaMessage;
     }
 
-    private ResponseEntity createResponse() {
+    private ResponseEntity<?> createResponse() {
 
         GenerateDocumentResponse response = new GenerateDocumentResponse();
 
@@ -141,7 +141,7 @@ public class MessageProcessorTest {
         response.setLinks(links);
         response.setSize("size");
 
-        ResponseEntity responseEntity = new ResponseEntity<>(response, HttpStatus.CREATED);
+        ResponseEntity<?> responseEntity = new ResponseEntity<>(response, HttpStatus.CREATED);
 
         return responseEntity;
     }

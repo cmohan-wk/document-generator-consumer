@@ -1,16 +1,16 @@
 package uk.gov.companieshouse.document.generator.consumer.avro;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
 import org.apache.avro.Schema;
 import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.Decoder;
 import org.apache.avro.io.DecoderFactory;
-import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.stereotype.Component;
-import uk.gov.companieshouse.kafka.message.Message;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import uk.gov.companieshouse.kafka.message.Message;
 
 /**
  * Deserializes binary data into an object using Avro.
@@ -28,8 +28,7 @@ public class AvroDeserializer<T extends SpecificRecordBase> {
      * @return T
      * @throws IOException
      */
-    public T deserialize(Message message, Schema schema) throws IOException {
-        DatumReader<T> reader = new SpecificDatumReader<>();
+    public T deserialize(DatumReader<T> reader, Message message, Schema schema) throws IOException {
         reader.setSchema(schema);
 
         try(ByteArrayInputStream in = new ByteArrayInputStream(message.getValue())) {

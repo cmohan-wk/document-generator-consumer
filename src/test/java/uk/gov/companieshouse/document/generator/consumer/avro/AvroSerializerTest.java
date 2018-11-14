@@ -1,29 +1,51 @@
 package uk.gov.companieshouse.document.generator.consumer.avro;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+
+import java.io.IOException;
+
+import org.apache.avro.io.DatumWriter;
+import org.apache.avro.io.Encoder;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import uk.gov.companieshouse.document.generator.consumer.document.models.avro.DocumentGenerationStarted;
-
-import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AvroSerializerTest {
-
-    /** Binary data representing a document generation started message */
-    private static final String ENCODED_AVRO_STRING = "requester-idID";
+    
+    @Mock
+    private DatumWriter<DocumentGenerationStarted> mockWriter;
+    
+    @BeforeEach
+    public void setUp() throws IOException {
+        MockitoAnnotations.initMocks(this);
+        doNothing().when(mockWriter).setSchema(any());
+        doNothing().when(mockWriter).write(any(), any());
+    }
 
     @Test
     @DisplayName("Check that data is serialized")
     public void testSerialize() throws IOException {
-        AvroSerializer<DocumentGenerationStarted> serializer = new AvroSerializer<>();
-        byte[] result = serializer.serialize(createTestData());
-        assertEquals(ENCODED_AVRO_STRING, new String(result));
+        DocumentGenerationStarted data = createTestData();
+
+        AvroSerializer serializer = new AvroSerializer();
+        byte[] result = serializer.serialize(mockWriter, data);
+        assertNotNull(result);
+
+        verify(mockWriter).setSchema(data.getSchema());
+        verify(mockWriter).write(eq(data), any(Encoder.class));
     }
 
     /**
