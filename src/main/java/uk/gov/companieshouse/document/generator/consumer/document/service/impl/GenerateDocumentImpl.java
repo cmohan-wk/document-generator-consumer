@@ -45,6 +45,7 @@ public class GenerateDocumentImpl implements GenerateDocument {
             return response;
 
         } catch (Exception e) {
+            LOG.error(e);
            throw new GenerateDocumentException("An error occurred when requesting the generation" +
                    " of a document from the document generator api", e);
         }
