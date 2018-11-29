@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
@@ -22,8 +23,8 @@ import uk.gov.companieshouse.document.generator.consumer.exception.GenerateDocum
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -50,7 +51,7 @@ public class GenerateDocumentTest {
 
         when(mockDocumentGeneratorConsumerProperties.getBaseUrl()).thenReturn("base_url");
         when(mockDocumentGeneratorConsumerProperties.getRootUri()).thenReturn("root_url");
-        when(mockRestTemplate.postForEntity(anyString(), any(GenerateDocumentRequest.class),
+        when(mockRestTemplate.postForEntity(anyString(), any(HttpEntity.class),
                 eq(GenerateDocumentResponse.class))).thenReturn(createResponse());
 
         ResponseEntity<GenerateDocumentResponse> response =
