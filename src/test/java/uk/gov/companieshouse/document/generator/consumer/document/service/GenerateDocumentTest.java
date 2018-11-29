@@ -19,6 +19,7 @@ import uk.gov.companieshouse.document.generator.consumer.document.models.Links;
 import uk.gov.companieshouse.document.generator.consumer.document.models.avro.DeserialisedKafkaMessage;
 import uk.gov.companieshouse.document.generator.consumer.document.service.impl.GenerateDocumentImpl;
 import uk.gov.companieshouse.document.generator.consumer.exception.GenerateDocumentException;
+import uk.gov.companieshouse.environment.EnvironmentReader;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,12 +46,16 @@ public class GenerateDocumentTest {
     @Mock
     private RestTemplate mockRestTemplate;
 
+    @Mock
+    private EnvironmentReader mockReader;
+
     @Test
     @DisplayName("Test that document generated when valid call made")
     void testDocumentGeneratedWhenValidCallMade() throws GenerateDocumentException {
 
         when(mockDocumentGeneratorConsumerProperties.getBaseUrl()).thenReturn("base_url");
         when(mockDocumentGeneratorConsumerProperties.getRootUri()).thenReturn("root_url");
+        when(mockReader.getMandatoryString(anyString())).thenReturn("api_url");
         when(mockRestTemplate.postForEntity(anyString(), any(HttpEntity.class),
                 eq(GenerateDocumentResponse.class))).thenReturn(createResponse());
 
