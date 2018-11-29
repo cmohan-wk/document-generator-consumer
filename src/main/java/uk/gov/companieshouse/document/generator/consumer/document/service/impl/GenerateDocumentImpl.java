@@ -1,8 +1,11 @@
 package uk.gov.companieshouse.document.generator.consumer.document.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.companieshouse.document.generator.consumer.DocumentGeneratorConsumerApplication;
 import uk.gov.companieshouse.document.generator.consumer.DocumentGeneratorConsumerProperties;
@@ -28,12 +31,18 @@ public class GenerateDocumentImpl implements GenerateDocument {
     @Autowired
     private DocumentGeneratorConsumerProperties configuration;
 
+    private static final String API_KEY = "CHS_API_KEY";
+
     @Override
     public ResponseEntity<GenerateDocumentResponse> requestGenerateDocument(DeserialisedKafkaMessage deserialisedKafkaMessage) throws GenerateDocumentException {
 
         String url = configuration.getRootUri() + configuration.getBaseUrl();
 
-        GenerateDocumentRequest request = populateDocumentRequest(deserialisedKafkaMessage);
+        String apiKey = System.getenv(API_KEY);
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.add("Authorization", apiKey);
+        GenerateDocumentRequest generateDocumentRequest = populateDocumentRequest(deserialisedKafkaMessage);
+        HttpEntity<GenerateDocumentRequest> request = new HttpEntity<>(generateDocumentRequest, headers);
 
         LOG.infoContext(deserialisedKafkaMessage.getUserId(), "Sending request to generate document to document" +
                 " generator api", setDebugMap(deserialisedKafkaMessage));
