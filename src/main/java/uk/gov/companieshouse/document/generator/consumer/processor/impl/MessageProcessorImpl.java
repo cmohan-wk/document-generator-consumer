@@ -72,6 +72,8 @@ public class MessageProcessorImpl implements MessageProcessor {
             try {
                 deserialisedKafkaMessage = avroDeserializer.deserialize(message, DeserialisedKafkaMessage.getClassSchema());
 
+                LOG.info(deserialisedKafkaMessage.getResource() + deserialisedKafkaMessage.getResourceId());
+
                 LOG.infoContext(deserialisedKafkaMessage.getUserId(), "Message received and deserialised from kafka",
                         setDebugMap(deserialisedKafkaMessage));
 
