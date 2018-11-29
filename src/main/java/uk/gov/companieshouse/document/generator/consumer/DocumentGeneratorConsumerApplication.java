@@ -31,6 +31,8 @@ public class DocumentGeneratorConsumerApplication implements WebMvcConfigurer {
 
     public static final String CONSUMER_TOPIC = "CONSUMER_TOPIC";
 
+    public static final String API_KEY = "CHS_API_KEY";
+
     public static final String GROUP_NAME = "GROUP_NAME";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAME_SPACE);
@@ -73,6 +75,7 @@ public class DocumentGeneratorConsumerApplication implements WebMvcConfigurer {
 
         environmentParams.add(CONSUMER_TOPIC);
         environmentParams.add(GROUP_NAME);
+        environmentParams.add(API_KEY);
         checkParam(environmentParams);
     }
 

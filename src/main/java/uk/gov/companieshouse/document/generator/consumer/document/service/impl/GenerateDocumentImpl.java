@@ -14,6 +14,7 @@ import uk.gov.companieshouse.document.generator.consumer.document.models.Generat
 import uk.gov.companieshouse.document.generator.consumer.document.models.avro.DeserialisedKafkaMessage;
 import uk.gov.companieshouse.document.generator.consumer.document.service.GenerateDocument;
 import uk.gov.companieshouse.document.generator.consumer.exception.GenerateDocumentException;
+import uk.gov.companieshouse.environment.EnvironmentReader;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
@@ -31,25 +32,19 @@ public class GenerateDocumentImpl implements GenerateDocument {
     @Autowired
     private DocumentGeneratorConsumerProperties configuration;
 
-    private static final String API_KEY = "CHS_API_KEY";
+    private EnvironmentReader reader;
 
     @Override
     public ResponseEntity<GenerateDocumentResponse> requestGenerateDocument(DeserialisedKafkaMessage deserialisedKafkaMessage) throws GenerateDocumentException {
 
         String url = configuration.getRootUri() + configuration.getBaseUrl();
 
-        String apiKey = System.getenv(API_KEY);
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-        headers.add("Authorization", apiKey);
-        GenerateDocumentRequest generateDocumentRequest = populateDocumentRequest(deserialisedKafkaMessage);
-        HttpEntity<GenerateDocumentRequest> request = new HttpEntity<>(generateDocumentRequest, headers);
-
         LOG.infoContext(deserialisedKafkaMessage.getUserId(), "Sending request to generate document to document" +
                 " generator api", setDebugMap(deserialisedKafkaMessage));
 
         try {
-            ResponseEntity<GenerateDocumentResponse> response = restTemplate.postForEntity(url, request,
-                    GenerateDocumentResponse.class);
+            ResponseEntity<GenerateDocumentResponse> response = restTemplate
+                    .postForEntity(url, setRequest(deserialisedKafkaMessage), GenerateDocumentResponse.class);
 
             return response;
 
@@ -62,11 +57,22 @@ public class GenerateDocumentImpl implements GenerateDocument {
 
     private GenerateDocumentRequest populateDocumentRequest(DeserialisedKafkaMessage deserialisedKafkaMessage) {
         GenerateDocumentRequest request = new GenerateDocumentRequest();
-        String resourceRefined = deserialisedKafkaMessage.getResource().replaceAll("[^\\d-]", "");
-        request.setResourceUri(deserialisedKafkaMessage.getResourceId());
-        request.setResourceID(resourceRefined);
+        request.setResourceUri(deserialisedKafkaMessage.getResource());
+        request.setResourceID(deserialisedKafkaMessage.getResourceId());
         request.setMimeType(deserialisedKafkaMessage.getContentType());
         request.setDocumentType(deserialisedKafkaMessage.getDocumentType());
+        return request;
+    }
+
+    private Object setRequest(DeserialisedKafkaMessage deserialisedKafkaMessage) {
+
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.add("Authorization", reader.getMandatoryString(DocumentGeneratorConsumerApplication.API_KEY));
+
+        GenerateDocumentRequest generateDocumentRequest = populateDocumentRequest(deserialisedKafkaMessage);
+
+        HttpEntity<GenerateDocumentRequest> request = new HttpEntity<>(generateDocumentRequest, headers);
+
         return request;
     }
 
