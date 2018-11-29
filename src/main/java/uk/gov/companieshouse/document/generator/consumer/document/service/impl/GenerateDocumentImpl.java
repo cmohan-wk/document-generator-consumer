@@ -62,9 +62,9 @@ public class GenerateDocumentImpl implements GenerateDocument {
 
     private GenerateDocumentRequest populateDocumentRequest(DeserialisedKafkaMessage deserialisedKafkaMessage) {
         GenerateDocumentRequest request = new GenerateDocumentRequest();
-        String resourceUriRefined = deserialisedKafkaMessage.getResourceId().replaceAll("[^\\d-]", "");
-        request.setResourceUri(resourceUriRefined);
-        request.setResourceID(deserialisedKafkaMessage.getResource());
+        String resourceRefined = deserialisedKafkaMessage.getResource().replaceAll("[^\\d-]", "");
+        request.setResourceUri(deserialisedKafkaMessage.getResourceId());
+        request.setResourceID(resourceRefined);
         request.setMimeType(deserialisedKafkaMessage.getContentType());
         request.setDocumentType(deserialisedKafkaMessage.getDocumentType());
         return request;
